@@ -1,6 +1,10 @@
 {
+  "type":"module",
   "dependencies": {
     "@google-cloud/local-auth": "^3.0.1",
+    "convert-csv-to-json": "^2.49.0",
+    "d3": "^7.9.0",
+    "fs": "^0.0.1-security",
     "googleapis": "^144.0.0"
   },
   "overrides": {
