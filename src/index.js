@@ -3,18 +3,38 @@ import { csvToJSON } from "./csvToJSON.js";
 import express from "express";
 import path from "path"
 import { fileURLToPath } from 'url';
+import 'path'
 
 const app = express();
 const port = process.env.PORT || 3000;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+console.log(__dirname)
 
 app.set("view engine", "ejs");
 app.use(express.static(__dirname));
 
+app.get('/src/ejsScripts.js', (req, res) => {
+    res.type('application/javascript');
+    res.sendFile(path.join(__dirname, 'ejsScripts.js'));
+});
+
+
 app.get("/", (req, res) => {
   res.render("emailForm");
+});
+
+app.get("/loadJSON", (req, res) => {
+  const fileName = req.query.file
+  const filePath = path.join(__dirname, `../datasets/${fileName}`)
+
+  const json = csvToJSON(filePath)
+
+  const keys = Object.keys(json[0])
+  
+
+  res.send(`Loaded file ${fileName}, keys: ${keys}`);
 });
 
 app.listen(port, function (error) {
