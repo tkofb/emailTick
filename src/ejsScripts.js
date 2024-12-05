@@ -15,7 +15,7 @@ function handleCC() {
 function handleBCC() {
   if (bcc.innerHTML == "") {
     bcc.innerHTML +=
-      '<label>bcc: <input type="text" id="bccInput" /></label><br /><br />';
+      '<label>bcc: <input type="text" id="bccInput" /></label><br />';
   } else {
     bcc.innerHTML = "";
   }
@@ -35,24 +35,27 @@ function checker() {
 
 fileInput.addEventListener("change", () => {
   const files = fileInput.files;
+  labels.innerHTML = ''
 
   if (files.length === 0) {
-    labels.innerHTML = "<label>labels: <p>no files selected.</p></label>";
     return;
   }
 
   const file = fileInput.files[0];
 
-  let output = "<label>selected files:<br>";
+  let output = "<label>labels: ";
 
-  output += "</label>";
-
-  labels.innerHTML = output;
-
-  // window.location.href = '/test'
   fetch(`http://localhost:3000/loadJSON?file=${encodeURIComponent(file.name)}`)
-    .then((response) => response.text()) // Assuming server responds with JSON
+    .then((response) => response.json()) // Assuming server responds with JSON
     .then((data) => {
+      data.forEach((x) => {
+        output += `<button>${x.toLowerCase()}</button>&nbsp`
+      });
+
+      output += "</label>";
+
+      labels.innerHTML = output;
+
       console.log("Response from server:", data);
     })
     .catch((error) => {

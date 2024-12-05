@@ -25,6 +25,6 @@ fieldset {
   border-radius: 8px;
 }
 
-label, button, input {
+label, button, input[type='button'], input[type='reset'] {
   font-weight: 700;
 }
