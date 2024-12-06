@@ -1,10 +1,9 @@
-import { authorize, sendMessage, listLabels } from "./googleAPI.js";
+import { authorize, sendMessage, getUserName } from "./googleAPI.js";
 import { csvToJSON } from "./csvToJSON.js";
 import express from "express";
 import path from "path";
 import { fileURLToPath } from "url";
 import "path";
-import 'body-parser'
 import bodyParser from "body-parser";
 
 const app = express();
@@ -24,7 +23,7 @@ app.get("/src/ejsScripts.js", (req, res) => {
 
 app.get("/", (req, res) => {
   res.render("emailForm");
-})
+});
 
 app.get("/loadJSON", (req, res) => {
   const fileName = req.query.file;
@@ -38,16 +37,78 @@ app.get("/loadJSON", (req, res) => {
   res.send(keys);
 });
 
-app.post("/sendEmails", (req, res) => {
-  let {to, subject, message, json} = req.body
+function parseString(message, variables) {
+  // Regular expression to match placeholders like ${variableName}
+  const regex = /\$\{(\w+)\}/g;
 
+  // Replace each placeholder with its corresponding value
+  return message.replace(regex, (match, variableName) => {
+    if (variables.hasOwnProperty(variableName)) {
+      return variables[variableName];
+    }
+    // If the variable is not found, leave it unchanged or handle it
+    return match;
+  });
+}
+app.post("/sendEmails", async function (req, res) {
+  let { bcc, cc, subject, message, json } = req.body;
+
+  let jsonPath = path.join(__dirname, "../datasets", json);
+  let data = csvToJSON(jsonPath);
+
+  // Switch all keys to lowercase
+  data = JSON.stringify(data);
+  data = data.replace(/"([\w]+)":/g, function ($0, $1) {
+    return '"' + $1.toLowerCase() + '":';
+  });
+  data = JSON.parse(data);
+
+  let auth = await authorize();
+  let name = await getUserName(auth);
+
+  data.forEach((x) => {
+    cc = parseString(cc, x);
+    bcc = parseString(bcc, x);
+    subject = parseString(subject, x);
+    message = parseString(message, x);
+
+    let email = [
+      `From: 'Your Name' <your-email@gmail.com>`,
+      `To: ${x['email']}`,
+      `CC: ${cc}`,
+      `BCC: ${bcc}`,
+      `Subject: ${cc}`,
+      ``,
+      message,
+    ];
+
+    email = email.concat([``, `Sincerely,`, name]);
+    email = email.join("\n");
+
+    sendMessage(auth, email, name);
+  });
+
+  console.log(name)
+  // authorize()
+  //   .then((auth) => {
+  //     getUserName(auth).then((name) => {
+  //       email = email.concat([``, `Sincerely,`, name]);
+  //       email = email.join("\n");
+
+  //       data.forEach(element => {
+  //         sendMessage(auth, email, name);
+  //       });
+  //     });
+  //   })
+  //   .catch(console.error);
 
   const variables = {
-    to: to,
+    cc: cc,
+    bcc: bcc,
     subject: subject,
     message: message,
-    json: json
-  }
+    json: json,
+  };
 
   res.render("confirmEmails", variables);
 });

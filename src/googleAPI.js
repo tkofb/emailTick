@@ -10,12 +10,13 @@ const SCOPES = [
   "https://www.googleapis.com/auth/gmail.modify",
   "https://www.googleapis.com/auth/gmail.compose",
   "https://www.googleapis.com/auth/gmail.send",
+  "https://www.googleapis.com/auth/userinfo.profile",
 ];
 // The file token.json stores the user's access and refresh tokens, and is
 // created automatically when the authorization flow completes for the first
 // time.
-const TOKEN_PATH = path.join(process.cwd(), "../token.json");
-const CREDENTIALS_PATH = path.join(process.cwd(), "../credentials.json");
+const TOKEN_PATH = path.join(process.cwd(), "token.json");
+const CREDENTIALS_PATH = path.join(process.cwd(), "credentials.json");
 
 /**
  * Reads previously authorized credentials from the save file.
@@ -72,46 +73,41 @@ export async function authorize() {
 }
 
 /**
- * Lists the labels in the user's account.
+ * Find the connected users name
  *
  * @param {google.auth.OAuth2} auth An authorized OAuth2 client.
  */
-export async function listLabels(auth) {
-  const gmail = google.gmail({ version: "v1", auth });
-  const res = await gmail.users.labels.list({
-    userId: "me",
-  });
-  const labels = res.data.labels;
-  if (!labels || labels.length === 0) {
-    console.log("No labels found.");
-    return;
-  }
-  console.log("Labels:");
-  labels.forEach((label) => {
-    console.log(`- ${label.name}`);
-  });
+
+export function getUserName(auth) {
+  const people = google.people({ version: "v1", auth });
+  return people.people
+    .get({
+      resourceName: "people/me",
+      personFields: "names",
+    })
+    .then((response) => {
+      const name = response.data.names[0]?.displayName;
+      return name || "Your Name";
+    });
 }
 
+const email = [
+  `From: 'Your Name' <your-email@gmail.com>`,
+  `To: benard.kihiuria@gmail.com`,
+  `CC: a@gmail.com`,
+  `BCC: b@gmail.com`,
+  `Subject: Seding a Text With A Name`,
+  ``,
+  'Test with name.',
+];
 /**
  * Lists the labels in the user's account.
  *
  * @param {google.auth.OAuth2} auth An authorized OAuth2 client.
  */
-export async function sendMessage(auth) {
-  const gmail = google.gmail({ version: "v1", auth });
 
-  const email = [
-    "From: 'Your Name' <your-email@gmail.com>",
-    "To: <your-email@gmail.com>",
-    "CC: <your-email@gmail.com>",
-    "BCC: <your-email@gmail.com>",
-    "Subject: Test Subject",
-    "",
-    "This is the body of the email.",
-    "",
-    "Sincerely,",
-    "<your-name>"
-  ].join("\n");
+export async function sendMessage(auth, email, name) {
+  const gmail = google.gmail({ version: "v1", auth });
 
   // Encode the email in Base64 (URL-safe)
   const base64EncodedEmail = Buffer.from(email)
@@ -124,11 +120,11 @@ export async function sendMessage(auth) {
   const res = await gmail.users.messages.send({
     userId: "me",
     requestBody: {
-      labelIds: ['INBOX', 'UNREAD', 'IMPORTANT'],
+      labelIds: ["INBOX", "UNREAD", "IMPORTANT"],
       raw: base64EncodedEmail,
     },
   });
 
-
   console.log(res.data);
 }
+
