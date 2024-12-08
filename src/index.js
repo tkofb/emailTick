@@ -52,6 +52,8 @@ function parseString(message, variables) {
 }
 app.post("/sendEmails", async function (req, res) {
   let { bcc, cc, subject, message, json } = req.body;
+  let successes = 0,
+    failures = 0;
 
   let jsonPath = path.join(__dirname, "../datasets", json);
   let data = csvToJSON(jsonPath);
@@ -67,40 +69,31 @@ app.post("/sendEmails", async function (req, res) {
   let name = await getUserName(auth);
 
   data.forEach((x) => {
-    cc = parseString(cc, x);
-    bcc = parseString(bcc, x);
-    subject = parseString(subject, x);
-    message = parseString(message, x);
+    let currentCC = parseString(cc, x);
+    let currentBCC = parseString(bcc, x);
+    let currentSubject = parseString(subject, x);
+    let currentMessage = parseString(message, x);
 
     let email = [
       `From: 'Your Name' <your-email@gmail.com>`,
-      `To: ${x['email']}`,
-      `CC: ${cc}`,
-      `BCC: ${bcc}`,
-      `Subject: ${cc}`,
+      `To: ${x["email"]}`,
+      `CC: ${currentCC}`,
+      `BCC: ${currentBCC}`,
+      `Subject: ${currentSubject}`,
       ``,
-      message,
+      currentMessage,
     ];
 
     email = email.concat([``, `Sincerely,`, name]);
     email = email.join("\n");
 
-    sendMessage(auth, email, name);
+    try {
+      sendMessage(auth, email, name); // Your email sending function
+      successes += 1;
+    } catch (error) {
+      failures += 1;
+    }
   });
-
-  console.log(name)
-  // authorize()
-  //   .then((auth) => {
-  //     getUserName(auth).then((name) => {
-  //       email = email.concat([``, `Sincerely,`, name]);
-  //       email = email.join("\n");
-
-  //       data.forEach(element => {
-  //         sendMessage(auth, email, name);
-  //       });
-  //     });
-  //   })
-  //   .catch(console.error);
 
   const variables = {
     cc: cc,
@@ -108,6 +101,8 @@ app.post("/sendEmails", async function (req, res) {
     subject: subject,
     message: message,
     json: json,
+    successes: successes,
+    failures: failures,
   };
 
   res.render("confirmEmails", variables);

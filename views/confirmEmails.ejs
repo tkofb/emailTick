@@ -9,11 +9,14 @@
   <body>
     <h1>emailTick.</h1>
 
-    <div>cc: <%- cc %></div>
-    <div>bcc: <%- bcc %></div>
-    <div>subject: <%- subject %></div>
-    <div>message: <%- message %></div>
-    <div>json: <%- json %></div>
-
+    <div>json file used: <%- json %></div>
+    <br>
+    <div>cc template: <%- cc %></div>
+    <div>bcc template: <%- bcc %></div>
+    <div>subject template: <%- subject %></div>
+    <div>message template: <%- message %></div>
+    <br>
+    <div><%- successes%> emails were successfully sent out</div>
+    <div><%- failures%> emails were not able to be successfully sent out</div>
   </body>
 </html>
