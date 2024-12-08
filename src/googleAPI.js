@@ -91,22 +91,13 @@ export function getUserName(auth) {
     });
 }
 
-const email = [
-  `From: 'Your Name' <your-email@gmail.com>`,
-  `To: benard.kihiuria@gmail.com`,
-  `CC: a@gmail.com`,
-  `BCC: b@gmail.com`,
-  `Subject: Seding a Text With A Name`,
-  ``,
-  'Test with name.',
-];
 /**
  * Lists the labels in the user's account.
  *
  * @param {google.auth.OAuth2} auth An authorized OAuth2 client.
  */
 
-export async function sendMessage(auth, email, name) {
+export async function sendMessage(auth, email, to) {
   const gmail = google.gmail({ version: "v1", auth });
 
   // Encode the email in Base64 (URL-safe)
@@ -125,6 +116,6 @@ export async function sendMessage(auth, email, name) {
     },
   });
 
-  console.log(res.data);
+  console.log(`Sending an email to: ${to}`);
 }
 

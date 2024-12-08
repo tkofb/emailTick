@@ -5,6 +5,9 @@ import path from "path";
 import { fileURLToPath } from "url";
 import "path";
 import bodyParser from "body-parser";
+import dotenv from "dotenv";
+import { MongoClient, ServerApiVersion } from "mongodb";
+import { url } from "inspector";
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -46,10 +49,34 @@ function parseString(message, variables) {
     if (variables.hasOwnProperty(variableName)) {
       return variables[variableName];
     }
+
     // If the variable is not found, leave it unchanged or handle it
     return match;
   });
 }
+
+async function logEmailSend(client, applicant) {
+  const result = await client
+    .db(databaseName)
+    .collection(collectionName)
+    .insertOne(applicant);
+}
+
+dotenv.config();
+
+const uri = `mongodb+srv://tkofb:${process.env.MONGO_DB_PASSWORD.replace(
+  "@",
+  "%40"
+)}@cluster0.4rkg4.mongodb.net/${
+  process.env.MONGO_DB_NAME
+}?retryWrites=true&w=majority&appName=Cluster0`;
+
+const client = new MongoClient(uri, { serverApi: ServerApiVersion.v1 });
+const [databaseName, collectionName] = [
+  process.env.MONGO_DB_NAME,
+  process.env.MONGO_COLLECTION,
+];
+
 app.post("/sendEmails", async function (req, res) {
   let { bcc, cc, subject, message, json } = req.body;
   let successes = 0,
@@ -67,6 +94,8 @@ app.post("/sendEmails", async function (req, res) {
 
   let auth = await authorize();
   let name = await getUserName(auth);
+  process.stdout.write("\n")
+  process.stdout.write("\n")
 
   data.forEach((x) => {
     let currentCC = parseString(cc, x);
@@ -88,7 +117,7 @@ app.post("/sendEmails", async function (req, res) {
     email = email.join("\n");
 
     try {
-      sendMessage(auth, email, name); // Your email sending function
+      sendMessage(auth, email, x["email"]); // Your email sending function
       successes += 1;
     } catch (error) {
       failures += 1;
@@ -105,6 +134,11 @@ app.post("/sendEmails", async function (req, res) {
     failures: failures,
   };
 
+  await client.connect();
+  await logEmailSend(client, variables);
+
+  process.stdout.write("\n")
+  process.stdout.write("Stop to shutdown the server: ");
   res.render("confirmEmails", variables);
 });
 
@@ -141,7 +175,3 @@ process.stdin.on("readable", () => {
   let dataInput, command;
   promptNextLine(dataInput, command);
 });
-
-// authorize().then(listLabels).catch(console.error);
-
-// console.log(csvToJSON('../datasets/data.csv'))
