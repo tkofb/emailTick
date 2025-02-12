@@ -87,6 +87,7 @@ node src/
 ![](./templatedEmail.png)
 
 <hr>
+
 ## dependencies
 
 - [@google-cloud/local-auth](https://www.npmjs.com/package/@google-cloud/local-auth)
