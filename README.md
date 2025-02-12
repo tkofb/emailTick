@@ -5,6 +5,7 @@
 this project allows you to send a templated email to email list based off of information given in a csv.
 
 <hr>
+
 ## installation
 
 ```bash
@@ -66,6 +67,7 @@ const SCOPES = [
 - There will be a test dataset given to you to as an example
 
 <hr>
+
 ## usage
 
 ```bash
@@ -73,6 +75,7 @@ node src/
 ```
 
 <hr>
+
 ## example view
 
 #### without template guidelines
@@ -99,6 +102,7 @@ node src/
 - [path](https://www.npmjs.com/package/path)
 
 <hr>
+
 ## contributing
 
 pull requests are welcome. for major changes, please open an issue first  
@@ -107,6 +111,7 @@ to discuss what you would like to change.
 please make sure to update tests as appropriate.  
 
 <hr>
+
 ## license
 
 [MIT](https://choosealicense.com/licenses/mit/)
