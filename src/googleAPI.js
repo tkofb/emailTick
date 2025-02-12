@@ -53,10 +53,6 @@ export async function saveCredentials(client) {
   await fs.writeFile(TOKEN_PATH, payload);
 }
 
-/**
- * Load or request or authorization to call APIs.
- *
- */
 export async function authorize() {
   let client = await loadSavedCredentialsIfExist();
   if (client) {
@@ -72,12 +68,6 @@ export async function authorize() {
   return client;
 }
 
-/**
- * Find the connected users name
- *
- * @param {google.auth.OAuth2} auth An authorized OAuth2 client.
- */
-
 export function getUserName(auth) {
   const people = google.people({ version: "v1", auth });
   return people.people
@@ -90,12 +80,6 @@ export function getUserName(auth) {
       return name || "Your Name";
     });
 }
-
-/**
- * Lists the labels in the user's account.
- *
- * @param {google.auth.OAuth2} auth An authorized OAuth2 client.
- */
 
 export async function sendMessage(auth, email, to) {
   const gmail = google.gmail({ version: "v1", auth });

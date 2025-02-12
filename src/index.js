@@ -6,7 +6,6 @@ import { fileURLToPath } from "url";
 import "path";
 import bodyParser from "body-parser";
 import dotenv from "dotenv";
-import { MongoClient, ServerApiVersion } from "mongodb";
 import { url } from "inspector";
 
 const app = express();
@@ -55,27 +54,7 @@ function parseString(message, variables) {
   });
 }
 
-async function logEmailSend(client, applicant) {
-  const result = await client
-    .db(databaseName)
-    .collection(collectionName)
-    .insertOne(applicant);
-}
-
 dotenv.config();
-
-const uri = `mongodb+srv://tkofb:${process.env.MONGO_DB_PASSWORD.replace(
-  "@",
-  "%40"
-)}@cluster0.4rkg4.mongodb.net/${
-  process.env.MONGO_DB_NAME
-}?retryWrites=true&w=majority&appName=Cluster0`;
-
-const client = new MongoClient(uri, { serverApi: ServerApiVersion.v1 });
-const [databaseName, collectionName] = [
-  process.env.MONGO_DB_NAME,
-  process.env.MONGO_COLLECTION,
-];
 
 app.post("/sendEmails", async function (req, res) {
   let { bcc, cc, subject, message, json } = req.body;
@@ -133,9 +112,6 @@ app.post("/sendEmails", async function (req, res) {
     successes: successes,
     failures: failures,
   };
-
-  await client.connect();
-  await logEmailSend(client, variables);
 
   process.stdout.write("\n")
   process.stdout.write("Stop to shutdown the server: ");
